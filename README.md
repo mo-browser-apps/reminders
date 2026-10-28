@@ -3,6 +3,8 @@
 Reminders is a desktop to-do app that keeps your tasks in color-coded lists, with nested subtasks,
 due dates, priorities, and smart lists for what is due today and what is scheduled.
 
+![Reminders showing the Today list, with overdue tasks, a nested subtask, and the details of the selected task](screenshot.png)
+
 - **Smart lists**: Today, Scheduled, All, and Completed, each showing how many tasks it holds.
 - **Lists**: your own lists, each with a name and a color.
 - **Subtasks**: nest tasks under other tasks, indent and outdent them, and move them up and down
