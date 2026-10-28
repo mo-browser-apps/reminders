@@ -1,0 +1,68 @@
+{
+  "name": "Reminders",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "mobrowser dev",
+    "dev:build": "mobrowser dev:build",
+    "build": "mobrowser build",
+    "pack": "mobrowser pack",
+    "test": "mobrowser test:e2e",
+    "test:e2e": "mobrowser test:e2e",
+    "gen": "mobrowser gen",
+    "add": "mobrowser add",
+    "sbom": "mobrowser sbom",
+    "agent": "mobrowser agent",
+    "mobrowser": "mobrowser"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.6.0",
+    "@shadcn/react": "^0.2.1",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.0",
+    "cmdk": "^1.1.1",
+    "date-fns": "^4.4.0",
+    "embla-carousel-react": "^8.6.0",
+    "input-otp": "^1.4.2",
+    "lucide-react": "^0.503.0",
+    "react": "^19.1.0",
+    "react-day-picker": "^10.0.1",
+    "react-dom": "^19.1.0",
+    "react-resizable-panels": "^4.12.1",
+    "recharts": "^3.8.0",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.2.0",
+    "tw-animate-css": "^1.4.0",
+    "@mobrowser/api": "2.20.0",
+    "@mobrowser/cli": "2.20.0",
+    "@bufbuild/protobuf": "^2.10.2"
+  },
+  "optionalDependencies": {
+    "@mobrowser/sdk-darwin-arm64": "2.20.0",
+    "@mobrowser/sdk-darwin-x64": "2.20.0",
+    "@mobrowser/sdk-linux-x64": "2.20.0",
+    "@mobrowser/sdk-win-x64": "2.20.0"
+  },
+  "allowScripts": {
+    "@mobrowser/sdk-darwin-arm64@2.20.0": true,
+    "@mobrowser/sdk-darwin-x64@2.20.0": true,
+    "fsevents@2.3.3": true
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@tailwindcss/postcss": "^4.1.2",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vitejs/plugin-react": "^6.0.0",
+    "postcss": "^8.4.33",
+    "tailwindcss": "^4.1.4",
+    "ts-proto": "^2.10.1",
+    "typescript": "^5.8.3",
+    "vite": "^8.0.0"
+  },
+  "engines": {
+    "node": "^20.20.2 || ^22.22.2 || >=24.14.1"
+  }
+}

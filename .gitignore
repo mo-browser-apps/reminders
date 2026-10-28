@@ -1,0 +1,16 @@
+# Node dependencies.
+node_modules/
+
+# MoBrowser local state.
+.mobrowser/
+
+# Build output.
+build/
+dist/
+out/
+
+# Generated code.
+gen/
+
+# macOS metadata.
+.DS_Store

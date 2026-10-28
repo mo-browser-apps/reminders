@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+// The app-level settings the main process owns (it needs them before any window
+// loads).
+message Settings {
+  bool launch_at_login = 1;
+  bool show_window_at_startup = 2;
+  bool check_for_updates_automatically = 3;
+  // Whether an update server is configured (mobrowser.conf.json
+  // app.updateServerUrl). When it isn't, the update setting and the Check for
+  // Updates button are hidden.
+  bool updates_enabled = 4;
+  // "system", "light" or "dark".
+  string theme = 5;
+}
+
+message SetSettingRequest {
+  bool enabled = 1;
+}
+
+message SetThemeRequest {
+  string theme = 1;
+}
+
+service SettingsService {
+  rpc GetSettings(google.protobuf.Empty) returns (Settings);
+  rpc SetLaunchAtLogin(SetSettingRequest) returns (Settings);
+  rpc SetShowWindowAtStartup(SetSettingRequest) returns (Settings);
+  rpc SetCheckForUpdatesAutomatically(SetSettingRequest) returns (Settings);
+  rpc SetTheme(SetThemeRequest) returns (Settings);
+  // Checks now and reports the result in native dialogs (up to date, update
+  // available, error).
+  rpc CheckForUpdates(google.protobuf.Empty) returns (google.protobuf.Empty);
+}

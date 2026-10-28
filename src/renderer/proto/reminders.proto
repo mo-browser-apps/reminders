@@ -1,0 +1,220 @@
+syntax = "proto3";
+
+// The app's domain: lists, tasks (nested through parent_id), and the per-view display
+// preferences. The main process owns the data (src/main/reminders/), applies every change,
+// and saves it; the renderer sends changes in batches and renders the library it gets back.
+
+enum Priority {
+  // Read as normal.
+  PRIORITY_UNSPECIFIED = 0;
+  PRIORITY_LOW = 1;
+  PRIORITY_NORMAL = 2;
+  PRIORITY_HIGH = 3;
+}
+
+enum SortOrder {
+  // Read as manual.
+  SORT_ORDER_UNSPECIFIED = 0;
+  SORT_ORDER_MANUAL = 1;
+  SORT_ORDER_DUE_DATE = 2;
+  SORT_ORDER_CREATED = 3;
+  SORT_ORDER_TITLE = 4;
+  SORT_ORDER_PRIORITY = 5;
+}
+
+message TaskList {
+  string id = 1;
+  string name = 2;
+  // A palette key such as "blue" or "orange" (the renderer maps it to a color).
+  string color = 3;
+  // Order in the sidebar, 0-based and contiguous.
+  int32 position = 4;
+  // ISO timestamp.
+  string created_at = 5;
+  // Part of the sample data that File ▸ Remove Sample Data… removes.
+  bool sample = 6;
+}
+
+message Task {
+  string id = 1;
+  string list_id = 2;
+  // The parent task's id; empty for a top-level task. A subtask is always in its parent's list.
+  string parent_id = 3;
+  string title = 4;
+  string notes = 5;
+  bool completed = 6;
+  // ISO timestamp; empty while the task is open.
+  string completed_at = 7;
+  // A local calendar day, "yyyy-MM-dd"; empty when there is no due date.
+  string due_date = 8;
+  // A local time of day, "HH:mm"; only with a due date, empty for "all day".
+  string due_time = 9;
+  Priority priority = 10;
+  // Order among its siblings (same list and parent), 0-based and contiguous.
+  int32 position = 11;
+  // ISO timestamps.
+  string created_at = 12;
+  string updated_at = 13;
+  bool sample = 14;
+}
+
+// How one view (a list id, or "today", "scheduled", "all", "completed") shows its tasks.
+message ViewPrefs {
+  string view_id = 1;
+  SortOrder sort = 2;
+  // Regular lists only: whether completed tasks are shown.
+  bool show_completed = 3;
+}
+
+// Everything the main window shows.
+message Library {
+  // Increases with every applied change; changes carry the revision they were based on.
+  int64 revision = 1;
+  repeated TaskList lists = 2;
+  repeated Task tasks = 3;
+  repeated ViewPrefs views = 4;
+  // Set when the data file couldn't be read and the backup was loaded instead.
+  string load_warning = 5;
+}
+
+// The saved file (data/library.pb in the app's data folder).
+message LibraryFile {
+  int32 format_version = 1;
+  // Always "reminders.library": a file without it isn't this app's.
+  string kind = 2;
+  int64 revision = 3;
+  repeated TaskList lists = 4;
+  repeated Task tasks = 5;
+  repeated ViewPrefs views = 6;
+}
+
+// Where a task goes among its new siblings. Neither set: at the end.
+message Placement {
+  oneof where {
+    string before_id = 1;
+    string after_id = 2;
+  }
+}
+
+message CreateList {
+  // A new UUID, chosen by the renderer.
+  string id = 1;
+  string name = 2;
+  string color = 3;
+}
+
+message UpdateList {
+  string id = 1;
+  optional string name = 2;
+  optional string color = 3;
+}
+
+// Deletes the list and every task in it.
+message DeleteList {
+  string id = 1;
+}
+
+// Puts back a deleted list and its tasks (Undo).
+message RestoreList {
+  TaskList list = 1;
+  repeated Task tasks = 2;
+}
+
+message CreateTask {
+  // A new UUID, chosen by the renderer.
+  string id = 1;
+  string list_id = 2;
+  string parent_id = 3;
+  string title = 4;
+  Placement placement = 5;
+  string due_date = 6;
+  Priority priority = 7;
+}
+
+// Sets the fields that are present.
+message UpdateTask {
+  string id = 1;
+  optional string title = 2;
+  optional string notes = 3;
+  // "" clears the due date (and its time).
+  optional string due_date = 4;
+  // "" makes the due date all-day.
+  optional string due_time = 5;
+  optional Priority priority = 6;
+}
+
+// Completes or reopens one task. Its subtasks keep their own state.
+message SetCompleted {
+  string id = 1;
+  bool completed = 2;
+}
+
+// Moves a task, with its subtasks, under a new parent and/or into another list.
+message MoveTask {
+  string id = 1;
+  string list_id = 2;
+  // Empty: top level. Must be in `list_id` and must not be the task or one of its subtasks.
+  string parent_id = 3;
+  Placement placement = 4;
+}
+
+// Deletes each task together with all of its subtasks.
+message DeleteTasks {
+  repeated string ids = 1;
+}
+
+// Puts back deleted tasks with their ids, positions and parents (Undo).
+message RestoreTasks {
+  repeated Task tasks = 1;
+}
+
+message SetViewPrefs {
+  ViewPrefs prefs = 1;
+}
+
+// Deletes the sample tasks. Sample lists are deleted when nothing of the user's is left in them.
+message RemoveSampleData {}
+
+message Change {
+  oneof change {
+    CreateList create_list = 1;
+    UpdateList update_list = 2;
+    DeleteList delete_list = 3;
+    RestoreList restore_list = 4;
+    CreateTask create_task = 5;
+    UpdateTask update_task = 6;
+    SetCompleted set_completed = 7;
+    MoveTask move_task = 8;
+    DeleteTasks delete_tasks = 9;
+    RestoreTasks restore_tasks = 10;
+    SetViewPrefs set_view_prefs = 11;
+    RemoveSampleData remove_sample_data = 12;
+  }
+}
+
+message GetLibraryRequest {}
+
+message GetLibraryResponse {
+  Library library = 1;
+}
+
+message ApplyRequest {
+  // The revision the renderer last received.
+  int64 base_revision = 1;
+  // Applied in order, all or nothing.
+  repeated Change changes = 2;
+}
+
+message ApplyResponse {
+  // The current library, changed or not.
+  Library library = 1;
+  // base_revision was stale: nothing was applied.
+  bool conflict = 2;
+  // A change was invalid: nothing was applied. Says why.
+  string error = 3;
+}
+
+service ReminderService {
+  rpc GetLibrary(GetLibraryRequest) returns (GetLibraryResponse);
+  rpc Apply(ApplyRequest) returns (ApplyResponse);
+}

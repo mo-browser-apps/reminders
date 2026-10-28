@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+// Every command the application menu can send to the renderer. The main process
+// builds a menu item for each; the renderer runs it. Add a value per command (a
+// choice like a sort order gets one value per option, or a typed field on
+// MenuCommand), and never reuse a number.
+enum Command {
+  COMMAND_UNSPECIFIED = 0;
+  // File
+  COMMAND_NEW_TASK = 1;
+  COMMAND_NEW_LIST = 2;
+  COMMAND_REMOVE_SAMPLE_DATA = 3;
+  // Edit
+  COMMAND_FIND = 4;
+  // View
+  COMMAND_TOGGLE_SIDEBAR = 5;
+  COMMAND_TOGGLE_DETAILS = 6;
+  COMMAND_SHOW_TODAY = 7;
+  COMMAND_SHOW_SCHEDULED = 8;
+  COMMAND_SHOW_ALL = 9;
+  COMMAND_SHOW_COMPLETED_LIST = 10;
+  COMMAND_TOGGLE_SHOW_COMPLETED = 11;
+  COMMAND_SORT_MANUAL = 12;
+  COMMAND_SORT_DUE_DATE = 13;
+  COMMAND_SORT_CREATED = 14;
+  COMMAND_SORT_TITLE = 15;
+  COMMAND_SORT_PRIORITY = 16;
+  // Task
+  COMMAND_TOGGLE_COMPLETED = 17;
+  COMMAND_ADD_SUBTASK = 18;
+  COMMAND_INDENT = 19;
+  COMMAND_OUTDENT = 20;
+  COMMAND_MOVE_UP = 21;
+  COMMAND_MOVE_DOWN = 22;
+  COMMAND_DUE_TODAY = 23;
+  COMMAND_DUE_TOMORROW = 24;
+  COMMAND_DUE_NONE = 25;
+  COMMAND_PRIORITY_HIGH = 26;
+  COMMAND_PRIORITY_NORMAL = 27;
+  COMMAND_PRIORITY_LOW = 28;
+  COMMAND_DELETE_TASK = 29;
+}
+
+// A command chosen from the application menu (or its keyboard shortcut).
+message MenuCommand {
+  Command command = 1;
+}
+
+// What the renderer is showing, so the menu can enable, label, and check its
+// items. An item is enabled only when choosing it would act: the renderer
+// computes each flag with the same check its command handler runs. Add one
+// field per guard your commands need.
+message MenuState {
+  // The main screen has loaded (data included) and can run commands.
+  bool ready = 1;
+  // A dialog is open; no command runs behind it.
+  bool modal = 2;
+  // View ▸ Hide Sidebar / Show Sidebar.
+  bool sidebar_open = 3;
+  // View ▸ Hide Details / Show Details.
+  bool details_open = 4;
+  // File ▸ New Task: the current view can take a new task.
+  bool can_new_task = 5;
+  // File ▸ Remove Sample Data…: there is sample data left.
+  bool has_sample_data = 6;
+  // View ▸ Show Completed: the current view is a regular list.
+  bool can_toggle_show_completed = 7;
+  bool show_completed = 8;
+  // View ▸ Sort By: the current view is a regular list; `sort` is its SortOrder.
+  bool can_sort = 9;
+  int32 sort = 10;
+  // Task commands: a task is selected and the focus is in the task list or on
+  // nothing (not in a text field).
+  bool task_target = 11;
+  bool task_completed = 12;
+  // The selected task's Priority.
+  int32 task_priority = 13;
+  bool task_has_due = 14;
+  bool can_indent = 15;
+  bool can_outdent = 16;
+  bool can_move_up = 17;
+  bool can_move_down = 18;
+}
+
+service MenuService {
+  // The runtime-owned stream of chosen commands; the main window subscribes to
+  // it.
+  rpc OnCommand(google.protobuf.Empty) returns (stream MenuCommand);
+  // The renderer reports its state; the menu enables and labels its items from
+  // it.
+  rpc SetState(MenuState) returns (google.protobuf.Empty);
+  // Runs a command in the main window as if it were chosen from the menu, for
+  // windows that don't hold the app's data (the Settings window). Brings the
+  // main window forward.
+  rpc Dispatch(MenuCommand) returns (google.protobuf.Empty);
+}

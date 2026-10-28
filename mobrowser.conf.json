@@ -1,0 +1,102 @@
+{
+  "app": {
+    "name": "Reminders",
+    "version": {
+      "major": "1",
+      "minor": "0",
+      "patch": "0"
+    },
+    "author": "",
+    "copyright": "© 2026 Reminders. All rights reserved.",
+    "description": "",
+    "locales": [
+      "en-US"
+    ],
+    "trustedOrigins": [],
+    "updateServerUrl": "",
+    "schemes": [],
+    "bundle": {
+      "macOS": {
+        "executableName": "",
+        "icon": "assets/app.icns",
+        "bundleID": "com.company.Reminders",
+        "extraInfo": "",
+        "codesignIdentity": "${MAC_CODESIGN_IDENTITY}",
+        "codesignEntitlements": "assets/entitlements.plist",
+        "fileAssociations": [],
+        "teamID": "${MAC_TEAM_ID}",
+        "appleID": "${MAC_APPLE_ID}",
+        "provisioningProfile": "",
+        "password": "${MAC_APPLE_PASSWORD}",
+        "extras": [],
+        "installer": {
+          "dmg": {
+            "name": "",
+            "volumeName": "",
+            "volumeIcon": "assets/app.icns",
+            "eula": "",
+            "deltaStrategy": "BestSpeed",
+            "window": {
+              "textSize": 14,
+              "skipPrettifying": false,
+              "backgroundImage": "",
+              "position": {
+                "x": 500,
+                "y": 400
+              },
+              "size": {
+                "width": 600,
+                "height": 400
+              },
+              "icon": {
+                "size": 150,
+                "position": {
+                  "x": 160,
+                  "y": 160
+                }
+              },
+              "appDropLink": {
+                "x": 430,
+                "y": 160
+              }
+            }
+          }
+        }
+      },
+      "Windows": {
+        "executableName": "",
+        "icon": "assets/app.ico",
+        "signCommand": "",
+        "fileAssociations": [],
+        "extras": [],
+        "installer": {
+          "exe": {
+            "name": "",
+            "icon": "assets/app.ico",
+            "installationGif": "",
+            "packageId": "Reminders",
+            "installationFolderName": "Reminders",
+            "displayName": "Reminders",
+            "shortcuts": "Desktop,StartMenuRoot",
+            "deltaStrategy": "BestSpeed"
+          }
+        }
+      },
+      "Linux": {
+        "executableName": "",
+        "icon": "assets/app.png",
+        "fileAssociations": [],
+        "extras": []
+      }
+    }
+  },
+  "automation": {
+    "mode": "interactive"
+  },
+  "native": {
+    "protobuf": {
+      "mode": "auto",
+      "toolchainMatch": "major"
+    }
+  }
+}

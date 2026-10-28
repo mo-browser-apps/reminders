@@ -1,0 +1,360 @@
+{
+  "source": "https://ui.shadcn.com",
+  "shadcnVersion": "4.13.0",
+  "fetchedAt": "2026-07-09T10:43:40.561Z",
+  "count": 88,
+  "files": [
+    {
+      "url": "https://ui.shadcn.com/docs/changelog",
+      "path": ".agents/skills/shadcn/component-docs/changelog.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/cli",
+      "path": ".agents/skills/shadcn/component-docs/cli.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components-json",
+      "path": ".agents/skills/shadcn/component-docs/components-json.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/accordion",
+      "path": ".agents/skills/shadcn/component-docs/components/accordion.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/alert-dialog",
+      "path": ".agents/skills/shadcn/component-docs/components/alert-dialog.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/alert",
+      "path": ".agents/skills/shadcn/component-docs/components/alert.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/aspect-ratio",
+      "path": ".agents/skills/shadcn/component-docs/components/aspect-ratio.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/avatar",
+      "path": ".agents/skills/shadcn/component-docs/components/avatar.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/badge",
+      "path": ".agents/skills/shadcn/component-docs/components/badge.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/breadcrumb",
+      "path": ".agents/skills/shadcn/component-docs/components/breadcrumb.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/button-group",
+      "path": ".agents/skills/shadcn/component-docs/components/button-group.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/button",
+      "path": ".agents/skills/shadcn/component-docs/components/button.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/calendar",
+      "path": ".agents/skills/shadcn/component-docs/components/calendar.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/card",
+      "path": ".agents/skills/shadcn/component-docs/components/card.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/carousel",
+      "path": ".agents/skills/shadcn/component-docs/components/carousel.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/chart",
+      "path": ".agents/skills/shadcn/component-docs/components/chart.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/checkbox",
+      "path": ".agents/skills/shadcn/component-docs/components/checkbox.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/collapsible",
+      "path": ".agents/skills/shadcn/component-docs/components/collapsible.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/combobox",
+      "path": ".agents/skills/shadcn/component-docs/components/combobox.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/command",
+      "path": ".agents/skills/shadcn/component-docs/components/command.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/context-menu",
+      "path": ".agents/skills/shadcn/component-docs/components/context-menu.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/data-table",
+      "path": ".agents/skills/shadcn/component-docs/components/data-table.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/date-picker",
+      "path": ".agents/skills/shadcn/component-docs/components/date-picker.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/dialog",
+      "path": ".agents/skills/shadcn/component-docs/components/dialog.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/direction",
+      "path": ".agents/skills/shadcn/component-docs/components/direction.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/drawer",
+      "path": ".agents/skills/shadcn/component-docs/components/drawer.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/dropdown-menu",
+      "path": ".agents/skills/shadcn/component-docs/components/dropdown-menu.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/empty",
+      "path": ".agents/skills/shadcn/component-docs/components/empty.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/field",
+      "path": ".agents/skills/shadcn/component-docs/components/field.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/hover-card",
+      "path": ".agents/skills/shadcn/component-docs/components/hover-card.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/input-group",
+      "path": ".agents/skills/shadcn/component-docs/components/input-group.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/input-otp",
+      "path": ".agents/skills/shadcn/component-docs/components/input-otp.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/input",
+      "path": ".agents/skills/shadcn/component-docs/components/input.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/item",
+      "path": ".agents/skills/shadcn/component-docs/components/item.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/kbd",
+      "path": ".agents/skills/shadcn/component-docs/components/kbd.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/label",
+      "path": ".agents/skills/shadcn/component-docs/components/label.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/menubar",
+      "path": ".agents/skills/shadcn/component-docs/components/menubar.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/native-select",
+      "path": ".agents/skills/shadcn/component-docs/components/native-select.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/navigation-menu",
+      "path": ".agents/skills/shadcn/component-docs/components/navigation-menu.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/pagination",
+      "path": ".agents/skills/shadcn/component-docs/components/pagination.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/popover",
+      "path": ".agents/skills/shadcn/component-docs/components/popover.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/progress",
+      "path": ".agents/skills/shadcn/component-docs/components/progress.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/radio-group",
+      "path": ".agents/skills/shadcn/component-docs/components/radio-group.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/resizable",
+      "path": ".agents/skills/shadcn/component-docs/components/resizable.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/scroll-area",
+      "path": ".agents/skills/shadcn/component-docs/components/scroll-area.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/select",
+      "path": ".agents/skills/shadcn/component-docs/components/select.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/separator",
+      "path": ".agents/skills/shadcn/component-docs/components/separator.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/sheet",
+      "path": ".agents/skills/shadcn/component-docs/components/sheet.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/sidebar",
+      "path": ".agents/skills/shadcn/component-docs/components/sidebar.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/skeleton",
+      "path": ".agents/skills/shadcn/component-docs/components/skeleton.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/slider",
+      "path": ".agents/skills/shadcn/component-docs/components/slider.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/sonner",
+      "path": ".agents/skills/shadcn/component-docs/components/sonner.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/spinner",
+      "path": ".agents/skills/shadcn/component-docs/components/spinner.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/switch",
+      "path": ".agents/skills/shadcn/component-docs/components/switch.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/table",
+      "path": ".agents/skills/shadcn/component-docs/components/table.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/tabs",
+      "path": ".agents/skills/shadcn/component-docs/components/tabs.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/textarea",
+      "path": ".agents/skills/shadcn/component-docs/components/textarea.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/toast",
+      "path": ".agents/skills/shadcn/component-docs/components/toast.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/toggle-group",
+      "path": ".agents/skills/shadcn/component-docs/components/toggle-group.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/toggle",
+      "path": ".agents/skills/shadcn/component-docs/components/toggle.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/tooltip",
+      "path": ".agents/skills/shadcn/component-docs/components/tooltip.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/typography",
+      "path": ".agents/skills/shadcn/component-docs/components/typography.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/directory",
+      "path": ".agents/skills/shadcn/component-docs/directory.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/figma",
+      "path": ".agents/skills/shadcn/component-docs/figma.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/installation/manual",
+      "path": ".agents/skills/shadcn/component-docs/installation/manual.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/installation/vite",
+      "path": ".agents/skills/shadcn/component-docs/installation/vite.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/javascript",
+      "path": ".agents/skills/shadcn/component-docs/javascript.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/mcp",
+      "path": ".agents/skills/shadcn/component-docs/mcp.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/monorepo",
+      "path": ".agents/skills/shadcn/component-docs/monorepo.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/react-19",
+      "path": ".agents/skills/shadcn/component-docs/react-19.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/registry",
+      "path": ".agents/skills/shadcn/component-docs/registry.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/registry/authentication",
+      "path": ".agents/skills/shadcn/component-docs/registry/authentication.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/registry/examples",
+      "path": ".agents/skills/shadcn/component-docs/registry/examples.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/registry/faq",
+      "path": ".agents/skills/shadcn/component-docs/registry/faq.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/registry/getting-started",
+      "path": ".agents/skills/shadcn/component-docs/registry/getting-started.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/registry/mcp",
+      "path": ".agents/skills/shadcn/component-docs/registry/mcp.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/registry/namespace",
+      "path": ".agents/skills/shadcn/component-docs/registry/namespace.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/registry/open-in-v0",
+      "path": ".agents/skills/shadcn/component-docs/registry/open-in-v0.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/registry/registry-index",
+      "path": ".agents/skills/shadcn/component-docs/registry/registry-index.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/registry/registry-item-json",
+      "path": ".agents/skills/shadcn/component-docs/registry/registry-item-json.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/registry/registry-json",
+      "path": ".agents/skills/shadcn/component-docs/registry/registry-json.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/rtl",
+      "path": ".agents/skills/shadcn/component-docs/rtl.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/rtl/next",
+      "path": ".agents/skills/shadcn/component-docs/rtl/next.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/rtl/start",
+      "path": ".agents/skills/shadcn/component-docs/rtl/start.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/rtl/vite",
+      "path": ".agents/skills/shadcn/component-docs/rtl/vite.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/skills",
+      "path": ".agents/skills/shadcn/component-docs/skills.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/tailwind-v4",
+      "path": ".agents/skills/shadcn/component-docs/tailwind-v4.md"
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/theming",
+      "path": ".agents/skills/shadcn/component-docs/theming.md"
+    }
+  ]
+}

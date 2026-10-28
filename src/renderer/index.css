@@ -1,0 +1,306 @@
+/* Scan only the renderer for class names. Without source("."), Tailwind auto-detects sources
+   from the project root and falls back to scanning node_modules/ and build/ whenever .gitignore
+   is not applied (e.g. the project sits in a parent repo that ignores it), which stalls the
+   first page load under `npm run dev` for several seconds and bloats the CSS. */
+@import 'tailwindcss' source(".");
+@import "tw-animate-css";
+@import "./shadcn.css";
+
+@layer base {
+    html {
+        @apply font-sans;
+        -moz-osx-font-smoothing: grayscale;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizelegibility;
+    }
+
+    * {
+        @apply border-border outline-ring/50;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+    }
+}
+
+@layer utilities {
+  @keyframes show {
+    from {
+      transform: scale(0.9) translateY(8px);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .show-animation {
+    transform: scale(0.9) translateY(8px);
+    opacity: 0;
+    animation: show 0.25s ease-in-out forwards;
+  }
+
+  /* macOS window dragging: mark the EMPTY space of a chrome container (the toolbar, the
+     sidebar's top inset) as a drag handle, and carve interactive descendants back out as
+     no-drag so they stay clickable. Never put a single drag strip on top of controls — the
+     OS drag region swallows the mouse and they become unclickable. Gated to macOS (the only
+     place the native titlebar is hidden); on Windows/Linux these are ordinary containers. */
+  :root[data-platform="mac"] .app-drag-region {
+    -webkit-app-region: drag;
+  }
+  :root[data-platform="mac"] .app-drag-region :where(
+    button, a, input, select, textarea, label, summary,
+    [role="button"], [role="link"], [role="menuitem"], [role="textbox"],
+    [contenteditable], [data-slot="input-group"], [data-slot="sidebar-menu-button"],
+    [data-slot="search-field"]
+  ) {
+    -webkit-app-region: no-drag;
+  }
+
+  /* Overlays render in portals, outside any .app-drag-region, so the carve-out above never
+     reaches them — yet the OS still treats a drag region underneath as "move the window" and
+     swallows the click (a dialog over a draggable pane could not be confirmed). Every floating
+     surface is explicitly no-drag; being later in the document, it wins over the region below. */
+  :root[data-platform="mac"] :is(
+    [data-slot$="-overlay"], [role="dialog"], [role="alertdialog"], [role="menu"],
+    [role="listbox"], [data-slot="popover-content"], [data-slot="tooltip-content"],
+    [data-sonner-toaster]
+  ) {
+    -webkit-app-region: no-drag;
+  }
+}
+
+@theme inline {
+    /* Typography. The stacks themselves are defined in :root below; these map them onto
+       Tailwind's font utilities, so `font-sans`, `font-mono` and `font-heading` work and
+       every component picks them up. The emoji stack is appended to both text families so
+       emoji fall back to a colour emoji font instead of tofu. */
+    --font-sans: var(--font-regular), var(--font-emoji);
+    --font-mono: var(--font-monospace), var(--font-emoji);
+    --font-heading: var(--font-sans);
+
+    /* Surface of a settings section card (see components/ui/settings.tsx). */
+    --color-settings-section: var(--settings-section);
+
+    /* State colors: a "good" and a "needs attention" signal that --primary/--destructive can't
+       express (run succeeded, stock low, payment pending). There is no -foreground pair — they
+       are TEXT/ICON colors, used on the surface or on their own tint (Badge variants
+       success/warning). Always pair them with text; color is never the only signal. */
+    --color-success: var(--success);
+    --color-warning: var(--warning);
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-selection-foreground: var(--sidebar-selection-foreground);
+    --color-sidebar-selection: var(--sidebar-selection);
+    --color-sidebar-tile: var(--sidebar-tile);
+    --color-sidebar-tile-hover: var(--sidebar-tile-hover);
+    /* The selected task row in the task list. */
+    --color-row-selection: var(--row-selection);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+
+    /* Text sizes */
+    --text-sm: 0.8125rem;              /* 13px */
+    --text-sm--line-height: 1.25rem;
+    --text-xs: 0.75rem;              /* 12px */
+    --text-xs--line-height: 1rem;
+}
+
+/* Light tokens. The dark ones below follow `prefers-color-scheme`, which the main process sets
+   with `app.setTheme()`. */
+:root {
+    color-scheme: light dark;
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.147 0.004 49.25);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.147 0.004 49.25);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.147 0.004 49.25);
+    --primary: oklch(60.278% 0.2178 257.441);
+    --primary-foreground: oklch(0.97 0.014 254.604);
+    --secondary: oklch(0.967 0.001 286.375);
+    --secondary-foreground: oklch(0.21 0.006 285.885);
+    --muted: oklch(0.97 0.001 106.424);
+    --muted-foreground: oklch(0.553 0.013 58.071);
+    --accent: oklch(0.97 0.001 106.424);
+    --accent-foreground: oklch(0.216 0.006 56.043);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(94.007% 0.00011 271.152);
+    --input: oklch(0.923 0.003 48.717);
+    --ring: oklch(60.096% 0.21874 257.76);
+    --chart-1: oklch(0.809 0.105 251.813);
+    --chart-2: oklch(0.623 0.214 259.815);
+    --chart-3: oklch(0.546 0.245 262.881);
+    --chart-4: oklch(0.488 0.243 264.376);
+    --chart-5: oklch(0.424 0.199 265.638);
+    --radius: 0.625rem;
+
+    --sidebar: oklch(0.985 0.001 106.423);
+    --sidebar-foreground: oklch(0.147 0.004 49.25);
+    --sidebar-primary: oklch(0.546 0.245 262.881);
+    --sidebar-primary-foreground: oklch(0.97 0.014 254.604);
+    --sidebar-accent: oklch(0.97 0.001 106.424);
+    --sidebar-accent-foreground: oklch(0.216 0.006 56.043);
+    /* The selected sidebar item (data-active). Separate from --sidebar-accent, which is only
+       the hover tint: at 0.97 on the 0.985 sidebar the selection was nearly invisible. */
+    --sidebar-selection: oklch(0.925 0.003 56.043);
+    --sidebar-selection-foreground: oklch(0.147 0.004 49.25);
+    --sidebar-border: oklch(0.923 0.003 48.717);
+    --sidebar-ring: oklch(0.709 0.01 56.259);
+    --settings-section: oklch(97.913% 0.00011 271.152);
+
+    /* State colors (light). Measured: success 5.32:1 on the card and 4.63:1 on its own 10% tint,
+       warning 5.49:1 / 4.78:1 — both clear the 4.5:1 text minimum. (The first values, L 0.58/0.66,
+       were tuned for 3:1 and failed as text: 3.57:1 / 2.92:1 on their tint.) */
+    --success: oklch(0.51 0.14 152);
+    --warning: oklch(0.53 0.15 62);
+
+    /* Reminders: the palette a list can pick (src/renderer/lib/list-colors.ts), and the smart
+       lists' colors. They fill the white-glyph circles and color a list's title, so each one
+       keeps a white glyph legible on it. */
+    --list-red: oklch(0.63 0.22 27);
+    --list-orange: oklch(0.7 0.18 50);
+    --list-yellow: oklch(0.76 0.16 84);
+    --list-green: oklch(0.64 0.17 149);
+    --list-teal: oklch(0.64 0.11 215);
+    --list-blue: oklch(0.6 0.2 256);
+    --list-indigo: oklch(0.51 0.2 277);
+    --list-purple: oklch(0.56 0.2 305);
+    --list-pink: oklch(0.63 0.22 357);
+    --list-brown: oklch(0.55 0.06 60);
+    --list-gray: oklch(0.58 0.01 260);
+    --smart-today: var(--list-blue);
+    --smart-scheduled: var(--list-red);
+    --smart-all: oklch(0.36 0.005 260);
+    --smart-completed: oklch(0.6 0.008 260);
+    /* The smart-list tiles' resting fill: a step off the sidebar, so the grid reads as tiles. */
+    --sidebar-tile: oklch(0 0 0 / 0.055);
+    --sidebar-tile-hover: oklch(0 0 0 / 0.085);
+    --row-selection: oklch(0.6 0.2 256 / 0.13);
+
+    /* Font stacks — the source of truth for typography; @theme inline above maps them onto
+       the Tailwind font utilities. No font ships with the app: every family has to be
+       installed on the user's machine, and the stack falls through to the next one when it
+       isn't. */
+    --font-regular: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", "Linear Thai", sans-serif;
+    --font-monospace: "Berkeley Mono", "SFMono Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    --font-emoji: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Segoe UI", "Twemoji Mozilla", "Noto Color Emoji", "Android Emoji";
+
+    /* Vertical space reserved at the top of a full-height column (the sidebar) so its
+       content clears the macOS traffic-light buttons. 0 when the titlebar is shown. */
+    --titlebar-inset: 0px;
+    /* Horizontal space the traffic-light cluster occupies from the window's left edge.
+       A top-of-window toolbar shifts its content right by this when the sidebar is
+       hidden/collapsed. */
+    --titlebar-traffic-width: 0px;
+}
+
+/* Set by App.tsx on macOS only, where the main process hides the native titlebar and puts
+   the traffic lights at TRAFFIC_LIGHT_POSITION (src/main/window-chrome.ts). These two values
+   reserve the cluster's box (bottom ≈ 31, right edge ≈ 84) and change together with it.
+   See .agents/skills/shadcn/rules/app-window.md. */
+:root[data-platform="mac"] {
+    --titlebar-inset: 36px;
+    --titlebar-traffic-width: 84px;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Surfaces: #1E1E1E window background, #292929 sidebar. Every tint below is stepped up from
+           these so hover/selection/popover still read as raised. */
+        --background: oklch(0.235 0 0);
+        --foreground: oklch(0.985 0.001 106.423);
+        --card: oklch(0.235 0 0);
+        --card-foreground: oklch(0.985 0.001 106.423);
+        --popover: oklch(0.29 0 0);
+        --popover-foreground: oklch(0.985 0.001 106.423);
+        --primary: oklch(54.276% 0.1928 257.027);
+        --primary-foreground: oklch(0.97 0.014 254.604);
+        --secondary: oklch(0.34 0.006 286.033);
+        --secondary-foreground: oklch(0.985 0 0);
+        --muted: oklch(0.34 0 0);
+        --muted-foreground: oklch(0.709 0.01 56.259);
+        --accent: oklch(0.34 0 0);
+        --accent-foreground: oklch(0.985 0.001 106.423);
+        --destructive: oklch(0.704 0.191 22.216);
+        --border: oklch(1 0 0 / 10%);
+        --input: oklch(1 0 0 / 15%);
+        --ring: oklch(54.276% 0.1928 257.027);
+        /* Dark ramp re-stepped so it stays monotone AND legible on the dark surface: intensity
+           reads as "lighter" on dark. The light ramp's --chart-4/5 measured 2.56:1 / 1.98:1 here,
+           so a --chart-2 + --chart-5 series pair (what data-display.md recommends) vanished. */
+        --chart-1: oklch(0.45 0.17 264);
+        --chart-2: oklch(0.623 0.214 259.815);
+        --chart-3: oklch(0.70 0.16 256);
+        --chart-4: oklch(0.78 0.12 254);
+        --chart-5: oklch(0.86 0.08 252);
+        --sidebar: oklch(0.281 0 0);
+        --sidebar-foreground: oklch(0.985 0.001 106.423);
+        --sidebar-primary: oklch(0.623 0.214 259.815);
+        --sidebar-primary-foreground: oklch(0.97 0.014 254.604);
+        --sidebar-accent: oklch(0.33 0 0);
+        --sidebar-accent-foreground: oklch(0.985 0.001 106.423);
+        --sidebar-selection: oklch(0.39 0 0);
+        --sidebar-selection-foreground: oklch(0.985 0.001 106.423);
+        --sidebar-border: oklch(1 0 0 / 10%);
+        --sidebar-ring: oklch(0.553 0.013 58.071);
+        --settings-section: oklch(0.281 0 0);
+
+        /* State colors (dark) — lifted for the dark card: success 8.47:1 / 6.23:1 on its 20% tint,
+           warning 9.64:1 / 6.8:1. Too light for a solid fill with text in this theme. */
+        --success: oklch(0.72 0.16 152);
+        --warning: oklch(0.78 0.14 70);
+
+        --list-red: oklch(0.66 0.21 25);
+        --list-orange: oklch(0.73 0.17 55);
+        --list-yellow: oklch(0.8 0.15 88);
+        --list-green: oklch(0.7 0.17 150);
+        --list-teal: oklch(0.7 0.11 215);
+        --list-blue: oklch(0.64 0.19 256);
+        --list-indigo: oklch(0.58 0.19 277);
+        --list-purple: oklch(0.63 0.19 305);
+        --list-pink: oklch(0.67 0.2 357);
+        --list-brown: oklch(0.6 0.06 60);
+        --list-gray: oklch(0.62 0.01 260);
+        --smart-all: oklch(0.52 0.005 260);
+        --smart-completed: oklch(0.6 0.008 260);
+        --sidebar-tile: oklch(1 0 0 / 0.07);
+        --sidebar-tile-hover: oklch(1 0 0 / 0.1);
+        --row-selection: oklch(0.64 0.19 256 / 0.24);
+    }
+}
