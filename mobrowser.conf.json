@@ -21,13 +21,13 @@
         "icon": "assets/app.icns",
         "bundleID": "com.company.Reminders",
         "extraInfo": "",
-        "codesignIdentity": "${MAC_CODESIGN_IDENTITY}",
+        "codesignIdentity": "${MACOS_CODESIGN_IDENTITY}",
         "codesignEntitlements": "assets/entitlements.plist",
         "fileAssociations": [],
-        "teamID": "${MAC_TEAM_ID}",
-        "appleID": "${MAC_APPLE_ID}",
+        "teamID": "${MACOS_TEAM_ID}",
+        "appleID": "${MACOS_APPLE_ID}",
         "provisioningProfile": "",
-        "password": "${MAC_APPLE_PASSWORD}",
+        "password": "${MACOS_APPLE_PASSWORD}",
         "extras": [],
         "installer": {
           "dmg": {

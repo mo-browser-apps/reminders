@@ -1,303 +1,185 @@
-# Build production artifacts on macOS (arm64 and Intel), Windows, and Linux, then draft a
-# GitHub Release.
-#
-# Requires a committed package-lock.json (npm ci).
-name: Release
-
+name: MoControl Release
+run-name: Release ${{ inputs.version }} • ${{ inputs.dispatch_id }}
 on:
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
-
+    inputs:
+      platforms:
+        description: JSON array of installer platforms
+        required: true
+        type: string
+      targets:
+        description: JSON array of installer targets (macos, macos-x64, windows); replaces platforms
+        required: false
+        default: ''
+        type: string
+      signing:
+        description: JSON object of per-platform signing choices
+        required: true
+        type: string
+      destination:
+        description: Artifact destination
+        required: true
+        type: choice
+        options: [mocontrol]
+      source_commit:
+        description: Exact application source commit
+        required: true
+        type: string
+      version:
+        description: Release version
+        required: true
+        type: string
+      release_notes:
+        description: Release notes
+        required: false
+        default: ''
+        type: string
+      dispatch_id:
+        description: MoControl release reservation
+        required: true
+        type: string
 permissions:
-  id-token: write
-  contents: write
-
+  contents: read
+concurrency:
+  group: mocontrol-release-${{ inputs.version }}
+  cancel-in-progress: false
 jobs:
-  build-macos:
-    environment: production
-    # macos-latest is Apple Silicon. It builds arm64 natively and cross-builds the
-    # Intel application.
-    runs-on: macos-latest
-
+  release:
+    name: ${{ matrix.target }} installer
     strategy:
-      # One architecture failing should not cancel the other.
       fail-fast: false
       matrix:
-        include:
-          - arch: arm64
-            target-flag: ''
-            releases-file: releases.osx.json
-          - arch: x64
-            target-flag: '--x64'
-            releases-file: releases.osx-x64.json
-
-    # On a Mac, `npm run mobrowser -- signcert --gh` exports your Developer ID Application
-    # certificate and adds all seven MAC_* secrets below as repository secrets.
+        target: ${{ fromJSON(inputs.targets || inputs.platforms) }}
+    # Apple Silicon runners cross-build the Intel Mac installer.
+    runs-on: ${{ matrix.target == 'windows' && 'windows-2022' || 'macos-15' }}
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        shell: bash
     env:
-      # Base64-encoded Developer ID Application certificate (.p12).
-      MAC_CERTIFICATE: ${{ secrets.MAC_CERTIFICATE }}
-      # Password used to export the .p12 certificate from Keychain Access.
-      MAC_CERTIFICATE_PWD: ${{ secrets.MAC_CERTIFICATE_PWD }}
-      # Password for the temporary CI keychain created during the build.
-      MAC_KEYCHAIN_PWD: ${{ secrets.MAC_KEYCHAIN_PWD }}
-      # Signing identity string, e.g. "Developer ID Application: Your Name (TEAMID)".
-      MAC_CODESIGN_IDENTITY: ${{ secrets.MAC_CODESIGN_IDENTITY }}
-      # Apple Developer Team ID (10-character string found in developer.apple.com).
-      MAC_TEAM_ID: ${{ secrets.MAC_TEAM_ID }}
-      # Apple ID email used for notarization.
-      MAC_APPLE_ID: ${{ secrets.MAC_APPLE_ID }}
-      # App-specific password generated at appleid.apple.com for notarization.
-      MAC_APPLE_PASSWORD: ${{ secrets.MAC_APPLE_PASSWORD }}
-
+      RELEASE_TARGET: ${{ matrix.target }}
+      # Read only by release.mjs from before `targets`; `macos-x64` makes it stop before any callback.
+      RELEASE_PLATFORM: ${{ matrix.target }}
+      RELEASE_BUILD_FLAGS: ${{ matrix.target == 'macos-x64' && '--x64' || '' }}
+      RELEASE_SIGN: ${{ fromJSON(inputs.signing)[matrix.target == 'windows' && 'windows' || 'macos'] }}
+      RELEASE_DESTINATION: ${{ inputs.destination }}
+      RELEASE_SOURCE_COMMIT: ${{ inputs.source_commit }}
+      RELEASE_VERSION: ${{ inputs.version }}
+      RELEASE_NOTES: ${{ inputs.release_notes }}
+      RELEASE_DISPATCH_ID: ${{ inputs.dispatch_id }}
+      MOCONTROL_RELEASE_URL: ${{ vars.MOCONTROL_RELEASE_URL }}
+      MOCONTROL_ORGANIZATION_ID: ${{ vars.MOCONTROL_ORGANIZATION_ID }}
+      MOCONTROL_APP_ID: ${{ vars.MOCONTROL_APP_ID }}
+      MOCONTROL_RELEASE_TOKEN: ${{ secrets.MOCONTROL_RELEASE_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Verify macOS signing secrets
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ inputs.source_commit }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Register reserved release attempt
+        run: node .mocontrol/release.mjs register
+      - name: Install dependencies and prepare version
+        run: |
+          npm ci
+          node .mocontrol/release.mjs prepare
+      - name: Build unsigned installer
+        if: env.RELEASE_SIGN != 'true'
+        run: |
+          npm run build -- $RELEASE_BUILD_FLAGS
+          npm run pack -- $RELEASE_BUILD_FLAGS
+      - name: Build, sign, notarize and verify macOS
+        if: startsWith(env.RELEASE_TARGET, 'macos') && env.RELEASE_SIGN == 'true'
+        env:
+          MAC_CERTIFICATE: ${{ secrets.MAC_CERTIFICATE }}
+          MAC_CERTIFICATE_PWD: ${{ secrets.MAC_CERTIFICATE_PWD }}
+          # mobrowser.conf.json references these names.
+          MACOS_CODESIGN_IDENTITY: ${{ secrets.MAC_CODESIGN_IDENTITY }}
+          MACOS_TEAM_ID: ${{ secrets.MAC_TEAM_ID }}
+          MACOS_APPLE_ID: ${{ secrets.MAC_APPLE_ID }}
+          MACOS_APPLE_PASSWORD: ${{ secrets.MAC_APPLE_PASSWORD }}
         run: |
           set -euo pipefail
-          if [ -z "${MAC_CERTIFICATE:-}" ]; then
-            echo "MAC_CERTIFICATE not set — code signing will be skipped."
-            exit 0
-          fi
-          missing=()
-          [ -z "${MAC_CERTIFICATE_PWD:-}" ]    && missing+=(MAC_CERTIFICATE_PWD)
-          [ -z "${MAC_KEYCHAIN_PWD:-}" ]        && missing+=(MAC_KEYCHAIN_PWD)
-          [ -z "${MAC_CODESIGN_IDENTITY:-}" ]   && missing+=(MAC_CODESIGN_IDENTITY)
-          [ -z "${MAC_TEAM_ID:-}" ]             && missing+=(MAC_TEAM_ID)
-          [ -z "${MAC_APPLE_ID:-}" ]            && missing+=(MAC_APPLE_ID)
-          [ -z "${MAC_APPLE_PASSWORD:-}" ]      && missing+=(MAC_APPLE_PASSWORD)
-          if [ ${#missing[@]} -gt 0 ]; then
-            echo "MAC_CERTIFICATE is set but the following required secrets are missing: ${missing[*]}"
-            exit 1
-          fi
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Set up macOS code signing (optional)
+          node .mocontrol/release.mjs signing
+          keychain="$RUNNER_TEMP/signing.keychain-db"
+          keychain_password="$(openssl rand -hex 24)"
+          security create-keychain -p "$keychain_password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$keychain_password" "$keychain"
+          for certificate in AppleRootCA-G3 AppleWWDRCAG6 DeveloperIDG2CA; do
+            curl -fsSL "https://www.apple.com/certificateauthority/$certificate.cer" -o "$RUNNER_TEMP/$certificate.cer"
+            security import "$RUNNER_TEMP/$certificate.cer" -k "$keychain"
+          done
+          echo "$MAC_CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/signing.p12"
+          security import "$RUNNER_TEMP/signing.p12" -k "$keychain" -P "$MAC_CERTIFICATE_PWD" -T /usr/bin/codesign
+          rm -f "$RUNNER_TEMP/signing.p12"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$keychain_password" "$keychain" > /dev/null
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+          npm run build -- $RELEASE_BUILD_FLAGS
+          app=$(echo build/dist/mac-${{ matrix.target == 'macos-x64' && 'x64' || 'arm64' }}/bin/*.app)
+          codesign --verify --deep --strict --verbose=2 "$app"
+          xcrun stapler validate "$app"
+          spctl --assess --type exec --verbose=4 "$app"
+          npm run pack -- $RELEASE_BUILD_FLAGS
+          node .mocontrol/release.mjs verified
+      - name: Build Windows
+        if: env.RELEASE_TARGET == 'windows' && env.RELEASE_SIGN == 'true'
         run: |
-          set -euo pipefail
-          if [ -z "${MAC_CERTIFICATE:-}" ]; then
-            echo "Skipping macOS code signing (no MAC_CERTIFICATE secret). Build will produce an unsigned DMG."
-            echo "To sign, run 'npm run mobrowser -- signcert --gh' on a Mac to add the signing secrets."
-            # Clear all other MAC_* signing vars so the build doesn't attempt to sign
-            # with a partially-configured identity that happens to be set in secrets.
-            {
-              echo "MAC_CERTIFICATE_PWD="
-              echo "MAC_KEYCHAIN_PWD="
-              echo "MAC_CODESIGN_IDENTITY="
-              echo "MAC_TEAM_ID="
-              echo "MAC_APPLE_ID="
-              echo "MAC_APPLE_PASSWORD="
-            } >> "$GITHUB_ENV"
-            exit 0
-          fi
-
-          KEYCHAIN_PATH=$RUNNER_TEMP/build.keychain
-          security create-keychain -p "$MAC_KEYCHAIN_PWD" "$KEYCHAIN_PATH"
-          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
-          security unlock-keychain -p "$MAC_KEYCHAIN_PWD" "$KEYCHAIN_PATH"
-
-          curl -fsSL https://www.apple.com/certificateauthority/AppleRootCA-G3.cer -o AppleRootCA-G3.cer
-          curl -fsSL https://www.apple.com/certificateauthority/AppleWWDRCAG6.cer -o AppleWWDRCAG6.cer
-          curl -fsSL https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer -o DeveloperIDG2CA.cer
-
-          security import ./AppleRootCA-G3.cer -k "$KEYCHAIN_PATH"
-          security import ./AppleWWDRCAG6.cer -k "$KEYCHAIN_PATH"
-          security import ./DeveloperIDG2CA.cer -k "$KEYCHAIN_PATH"
-
-          echo "$MAC_CERTIFICATE" | base64 --decode > "$RUNNER_TEMP/certificate.p12"
-          security import "$RUNNER_TEMP/certificate.p12" -k "$KEYCHAIN_PATH" -P "$MAC_CERTIFICATE_PWD" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple: -s -k "$MAC_KEYCHAIN_PWD" "$KEYCHAIN_PATH"
-          security list-keychain -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | tr -d '"')
-
-      - name: Build release package
-        run: npm run build -- --verbose ${{ matrix.target-flag }}
-
-      - name: Build DMG and auto-update packages
-        run: npm run pack -- --verbose ${{ matrix.target-flag }}
-
-      - name: Upload macOS artifact
-        uses: actions/upload-artifact@v4
+          node .mocontrol/release.mjs signing
+          npm run build
+      - name: Sign Windows application
+        if: env.RELEASE_TARGET == 'windows' && env.RELEASE_SIGN == 'true'
+        uses: azure/artifact-signing-action@c7ab2a863ab5f9a846ddb8265964877ef296ee82 # v2.0.0
         with:
-          name: artifacts-mac-${{ matrix.arch }}
-          path: |
-            build/dist/mac-${{ matrix.arch }}/pack/*.dmg
-            build/dist/mac-${{ matrix.arch }}/pack/*.nupkg
-            build/dist/mac-${{ matrix.arch }}/pack/${{ matrix.releases-file }}
-          if-no-files-found: error
-
-  build-windows:
-    # To securely authenticate GitHub Actions with Azure using federated credentials we need
-    # an environment-based approach that can be triggered by any event (including version tags).
-    environment: production
-    runs-on: windows-latest
-
-    env:
-      # Azure Artifact Signing account name (Artifact Signing resource in the Azure portal).
-      AZURE_SIGNING_ACCOUNT_NAME: ${{ secrets.AZURE_SIGNING_ACCOUNT_NAME }}
-      # Certificate profile name within the Artifact Signing account.
-      AZURE_CERTIFICATE_PROFILE_NAME: ${{ secrets.AZURE_CERTIFICATE_PROFILE_NAME }}
-      # Azure Artifact Signing endpoint URL (e.g. "https://weu.codesigning.azure.net/").
-      AZURE_SIGNING_ENDPOINT: ${{ secrets.AZURE_SIGNING_ENDPOINT }}
-      # Service principal client ID (app registration) used by DefaultAzureCredential.
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      # Azure Active Directory tenant ID of the service principal.
-      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      # Azure subscription ID of the service principal.
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Verify Windows signing secrets
-        shell: pwsh
-        run: |
-          if ([string]::IsNullOrWhiteSpace($env:AZURE_SIGNING_ACCOUNT_NAME)) {
-            Write-Host "AZURE_SIGNING_ACCOUNT_NAME not set — code signing will be skipped."
-            exit 0
-          }
-          $missing = @()
-          if ([string]::IsNullOrWhiteSpace($env:AZURE_CERTIFICATE_PROFILE_NAME)) { $missing += "AZURE_CERTIFICATE_PROFILE_NAME" }
-          if ([string]::IsNullOrWhiteSpace($env:AZURE_SIGNING_ENDPOINT))          { $missing += "AZURE_SIGNING_ENDPOINT" }
-          if ([string]::IsNullOrWhiteSpace($env:AZURE_CLIENT_ID))                 { $missing += "AZURE_CLIENT_ID" }
-          if ([string]::IsNullOrWhiteSpace($env:AZURE_TENANT_ID))                 { $missing += "AZURE_TENANT_ID" }
-          if ([string]::IsNullOrWhiteSpace($env:AZURE_SUBSCRIPTION_ID))             { $missing += "AZURE_SUBSCRIPTION_ID" }
-          if ($missing.Count -gt 0) {
-            Write-Error "AZURE_SIGNING_ACCOUNT_NAME is set but the following required secrets are missing: $($missing -join ', ')"
-            exit 1
-          }
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Azure login (for code signing)
-        if: env.AZURE_SIGNING_ACCOUNT_NAME != ''
-        uses: azure/login@v3
-        with:
-          client-id: ${{ env.AZURE_CLIENT_ID }}
-          tenant-id: ${{ env.AZURE_TENANT_ID }}
-          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Build release package
-        run: npm run build -- --verbose
-
-      - name: Sign Windows binaries (optional)
-        if: env.AZURE_SIGNING_ACCOUNT_NAME != ''
-        uses: azure/artifact-signing-action@v2
-        with:
-          endpoint: ${{ env.AZURE_SIGNING_ENDPOINT }}
-          signing-account-name: ${{ env.AZURE_SIGNING_ACCOUNT_NAME }}
-          certificate-profile-name: ${{ env.AZURE_CERTIFICATE_PROFILE_NAME }}
-          files-folder: ${{ github.workspace }}\build\dist\win-x64\bin
-          files-folder-filter: exe,dll,cat
+          azure-tenant-id: ${{ secrets.WINDOWS_AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.WINDOWS_AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.WINDOWS_AZURE_CLIENT_SECRET }}
+          endpoint: ${{ secrets.WINDOWS_AZURE_SIGNING_ENDPOINT }}
+          signing-account-name: ${{ secrets.WINDOWS_AZURE_SIGNING_ACCOUNT_NAME }}
+          certificate-profile-name: ${{ secrets.WINDOWS_AZURE_SIGNING_PROFILE_NAME }}
+          files-folder: ${{ github.workspace }}/build/dist/win-x64/bin
+          files-folder-filter: exe,dll,node
           files-folder-recurse: true
           file-digest: SHA256
           timestamp-rfc3161: http://timestamp.acs.microsoft.com
           timestamp-digest: SHA256
-
-      - name: Build installer and auto-update packages
-        id: pack
-        shell: pwsh
-        run: npm run pack -- --verbose
-
-      - name: Sign installer (optional)
-        if: env.AZURE_SIGNING_ACCOUNT_NAME != ''
-        uses: azure/artifact-signing-action@v2
+      - name: Package Windows installer
+        if: env.RELEASE_TARGET == 'windows' && env.RELEASE_SIGN == 'true'
+        run: npm run pack
+      - name: Sign Windows installer
+        if: env.RELEASE_TARGET == 'windows' && env.RELEASE_SIGN == 'true'
+        uses: azure/artifact-signing-action@c7ab2a863ab5f9a846ddb8265964877ef296ee82 # v2.0.0
         with:
-          endpoint: ${{ env.AZURE_SIGNING_ENDPOINT }}
-          signing-account-name: ${{ env.AZURE_SIGNING_ACCOUNT_NAME }}
-          certificate-profile-name: ${{ env.AZURE_CERTIFICATE_PROFILE_NAME }}
-          files-folder: ${{ github.workspace }}\build\dist\win-x64\pack
+          azure-tenant-id: ${{ secrets.WINDOWS_AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.WINDOWS_AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.WINDOWS_AZURE_CLIENT_SECRET }}
+          endpoint: ${{ secrets.WINDOWS_AZURE_SIGNING_ENDPOINT }}
+          signing-account-name: ${{ secrets.WINDOWS_AZURE_SIGNING_ACCOUNT_NAME }}
+          certificate-profile-name: ${{ secrets.WINDOWS_AZURE_SIGNING_PROFILE_NAME }}
+          files-folder: ${{ github.workspace }}/build/dist/win-x64/pack
           files-folder-filter: exe
           file-digest: SHA256
           timestamp-rfc3161: http://timestamp.acs.microsoft.com
           timestamp-digest: SHA256
-
-      - name: Upload Windows artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-win-x64
-          path: |
-            build/dist/win-x64/pack/*.exe
-            build/dist/win-x64/pack/*.nupkg
-            build/dist/win-x64/pack/releases.win.json
-          if-no-files-found: error
-
-  build-linux:
-    environment: production
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build release package
-        run: npm run build -- --verbose
-
-      # Linux production builds have no installer yet; ship the bin tree for distribution or CI.
-      # Named like the other installers: <executable name or app name>-<version>-linux-x64.tar.gz.
-      - name: Pack Linux binaries
+      - name: Verify Windows signatures
+        if: env.RELEASE_TARGET == 'windows' && env.RELEASE_SIGN == 'true'
+        shell: pwsh
         run: |
-          ARCHIVE=$(node -p 'const a = require("./mobrowser.conf.json").app, v = a.version; `${a.bundle?.Linux?.executableName || a.name}-${v ? [v.major, v.minor, v.patch].map(p => p || 0).join(".") : "SNAPSHOT"}-linux-x64.tar.gz`')
-          tar -czvf "$ARCHIVE" -C build/dist/linux-x64/bin .
-          echo "LINUX_ARCHIVE=$ARCHIVE" >> "$GITHUB_ENV"
-
-      - name: Upload Linux artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts-linux-x64
-          path: ${{ env.LINUX_ARCHIVE }}
-          if-no-files-found: error
-
-  release:
-    name: Create GitHub Release draft
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs:
-      - build-macos
-      - build-windows
-      - build-linux
-
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: dist/
-
-      - name: Create GitHub Release draft
-        uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
-        with:
-          files: |
-            dist/artifacts-mac-arm64/**/*.dmg
-            dist/artifacts-mac-arm64/**/*.nupkg
-            dist/artifacts-mac-arm64/**/releases.osx.json
-            dist/artifacts-mac-x64/**/*.dmg
-            dist/artifacts-mac-x64/**/*.nupkg
-            dist/artifacts-mac-x64/**/releases.osx-x64.json
-            dist/artifacts-win-x64/**/*.exe
-            dist/artifacts-win-x64/**/*.nupkg
-            dist/artifacts-win-x64/**/releases.win.json
-            dist/artifacts-linux-x64/**/*.tar.gz
-          tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
-          draft: true
-
-      - name: List release artifacts
-        run: ls -R dist
+          $files = Get-ChildItem build/dist/win-x64/bin -Recurse -File -Include *.exe, *.dll, *.node
+          $files += Get-ChildItem build/dist/win-x64/pack -File -Filter *.exe
+          $unsigned = $files | Where-Object { (Get-AuthenticodeSignature $_.FullName).Status -ne 'Valid' }
+          if ($unsigned) { throw "Unsigned files: $($unsigned.FullName -join ', ')" }
+          node .mocontrol/release.mjs verified
+      - name: Publish installer
+        run: node .mocontrol/release.mjs publish
+      - name: Record failure
+        if: failure()
+        run: node .mocontrol/release.mjs failed
+      - name: Record cancellation
+        if: cancelled()
+        run: node .mocontrol/release.mjs cancelled
